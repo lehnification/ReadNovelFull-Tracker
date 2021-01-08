@@ -81,7 +81,7 @@ def compareSaveWithNewPoll(filename, chapters):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+    logging.basicConfig(level=logging.INFO)
     heroku = read_config('heroku')
     webhookId = os.environ['WEBHOOKID'] if heroku else read_config('webhookId')
     webhookToken = os.environ['WEBHOOKTOKEN'] if heroku else read_config('webhookToken')
