@@ -13,7 +13,7 @@ def timed_job():
 if __name__ == '__main__':
     logging.basicConfig(level = logging.INFO, format='[%(levelname)s] %(message)s')
     logging.info('--------------')
-    logging.info('ReadNovelFull Chapter Checker')
+    logging.info('ReadNovelFull Tracker')
     logging.info('--------------')
     logging.info('Initialise Novels')
     p = subprocess.call([sys.executable, 'checker.py'])
