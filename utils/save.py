@@ -78,7 +78,6 @@ def file_exists(filename):
     return os.path.isfile('json/' + filename + '.json')
 
 
-def create_file(filename):
+def create_file(filename, content):
     with open('json/' + filename + '.json', 'w') as q:
-        data = {"name":"", "id":0, "chapters":[]}
-        json.dump(data, q)
+        json.dump(content, q, ensure_ascii=False, indent=4)

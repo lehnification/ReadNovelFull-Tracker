@@ -2,6 +2,7 @@ import requests
 import logging
 import unidecode
 import os
+import traceback
 from bs4 import BeautifulSoup
 from discord import Webhook, RequestsWebhookAdapter
 from utils.save import *
@@ -11,59 +12,58 @@ def execute_checks():
     novels = read_config('novels')
 
     for novel in novels:
-        check_file_for_novel(novel)
-        chapters = poll_chapters(novel)
-        compareSaveWithNewPoll(novel, chapters)
-
+        try:
+            check_file_for_novel(novel)
+            chapters = poll_chapters(novel, reading_key(novel, "id"))
+            compareSaveWithNewPoll(novel, chapters)
+        except Exception as e:
+            logging.exception('Error while working on ' + novel)
+            webhook.send('`%s` threw an error! \n ```python\n%s``` \n %s' % (novel, traceback.format_exc(), user))
 
 def check_file_for_novel(filename):
     if not file_exists(filename):
-        create_file(filename)
-        initialize_novel(filename)
+        initialise_novel(filename)
 
 
-def initialize_novel(filename):
-    website = read_config('website')
-    extenstion = read_config('extenstion')
-    link = website + '/' + filename + extenstion
+def initialise_novel(filename):
+    link = read_config('website') + '/' + filename + read_config('extenstion')
+    data = {"name":"", "id":0, "chapters":[]}
 
     r = requests.get(link)
-    try:
-        r.raise_for_status()
+    r.raise_for_status()
 
-        soup = BeautifulSoup(r.content, 'html.parser')
-        saving(filename, "name", soup.find(class_='title').text)
-        saving(filename, "id", soup.find(id='rating')['data-novel-id'])
-        saving(filename, "chapters", poll_chapters(filename))
-    except Exception as e:
-        logging.exception('Error during initial creation for ' + filename)
-        webhook.send(
-            user + ' Excpetion occurd during initial creation for ``' + filename + '``.')
+    soup = BeautifulSoup(r.content, 'html.parser')
+    data["name"] = soup.find(class_='title').text
+    data["id"] = soup.find(id='rating')['data-novel-id']
+
+    if data["name"] is None:
+        raise ValueError("No title found!")
+    if data["id"] is None:
+        raise ValueError("No novelID found!")
+
+    data["chapters"] = poll_chapters(filename, data["id"])
+    create_file(filename, data)
+    webhook.send('**%s** initialised \n %s \n %s' % (reading_key(filename, "name"), link, user))
 
 
-def poll_chapters(filename):
+def poll_chapters(filename, novelId):
     website = read_config('website')
-    chapterArchive = read_config('chapterArchive')
-    novelId = reading_key(filename, "id")
-    link = website + chapterArchive + novelId
+    link = website + read_config('chapterArchive') + novelId
 
     r = requests.get(link)
-    try:
-        r.raise_for_status()
+    r.raise_for_status()
 
-        soup = BeautifulSoup(r.content, 'html.parser')
-        chapters_html = soup.find_all('a')
-        chapters = []
-        for chapter in chapters_html:
-            entry = {}
-            entry["name"] = unidecode.unidecode(chapter['title'])
-            entry["link"] = website + chapter['href']
-            chapters.append(entry)
-        return chapters
-    except Exception as e:
-        logging.exception('Error during chapter poll for ' + filename)
-        webhook.send(
-            user + ' Excpetion occurd during chapter poll for ``' + filename + '``.')
+    soup = BeautifulSoup(r.content, 'html.parser')
+    chapters_html = soup.find_all('a')
+    if len(chapters_html) == 0:
+        raise ValueError("No chapters found!")
+    chapters = []
+    for chapter in chapters_html:
+        entry = {}
+        entry["name"] = unidecode.unidecode(chapter['title'])
+        entry["link"] = website + chapter['href']
+        chapters.append(entry)
+    return chapters
 
 
 def compareSaveWithNewPoll(filename, chapters):
@@ -73,8 +73,11 @@ def compareSaveWithNewPoll(filename, chapters):
     if len(new_chapters) != 0:
         saving(filename, "chapters", chapters)
         novel = reading_key(filename, "name")
-        for new_chapter in new_chapters:
-            webhook.send('**%s**, *%s* \n %s \n %s' % (novel, new_chapter["name"], new_chapter["link"], user))
+        if len(new_chapters) > 15:
+            webhook.send('**%s**, *%s* - *%s* \n %s' % (novel, new_chapters[0]["name"], new_chapters[len(new_chapters)-1]["name"], user))
+        else:
+            for new_chapter in new_chapters:
+                webhook.send('**%s**, *%s* \n %s \n %s' % (novel, new_chapter["name"], new_chapter["link"], user))
 
 
 if __name__ == '__main__':
