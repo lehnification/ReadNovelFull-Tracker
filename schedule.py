@@ -15,4 +15,7 @@ if __name__ == '__main__':
     logging.info('--------------')
     logging.info('ReadNovelFull Chapter Checker')
     logging.info('--------------')
+    logging.info('Initialise Novels')
+    p = subprocess.call([sys.executable, 'checker.py'])
+    logging.info("Switching over to 15 minutes interval check")
     sched.start()
