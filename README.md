@@ -1,2 +1,2 @@
 # ReadNovelFull-Update
- Checks inr regular intervalls for updates on configured series
+Script to check for new Chapters on https://readnovelfull.com

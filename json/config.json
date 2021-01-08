@@ -1,0 +1,16 @@
+{
+    "webhookId": "-",
+    "webhookToken": "-",
+    "discordUserId" :"-",
+    "heroku":true,
+    "website": "https://readnovelfull.com",
+    "extenstion": ".html",
+    "chapterArchive": "/ajax/chapter-archive?novelId=",
+    "novels": [
+        "the-legendary-mechanic",
+        "reincarnation-of-the-strongest-sword-god",
+        "mages-are-too-op",
+        "supreme-magus",
+        "overgeared"
+    ]
+}
