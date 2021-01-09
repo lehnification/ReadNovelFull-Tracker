@@ -2,7 +2,6 @@ import logging
 import subprocess
 import sys
 from apscheduler.schedulers.blocking import BlockingScheduler
-from utils.save import read_config
 
 sched = BlockingScheduler()
 
