@@ -1,33 +1,28 @@
 import os
 import psycopg2
-from psycopg2 import Error
+from psycopg2 import Error, sql
 
 
 
 
 def get_setting(value):
-    return get_from_db('value', 'settings', 'name', value)
+    q = sql.SQL("SELECT {} from {} where {} =%s").format(sql.Identifier('value'), sql.Identifier('settings'), sql.Identifier('name'))
+    return get_from_db(q, (value,))
 
 def get_novels():
-    return get_from_db('*', 'novels', None, None)
+    q = sql.SQL("SELECT {} FROM {}").format(sql.SQL('*'), sql.Identifier('novels'))
+    return get_from_db(q, None)
     
-def get_from_db(select, table, where, value):
+def get_from_db(query, data):
     try:
         DATABASE_URL = os.environ['DATABASE_URL']
         connection = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = connection.cursor()
-        query = None
-        data = None
-        if where is None:
-            query = "SELECT %s FROM %s"
-            data = (select, table)
-        else:
-            query = "SELECT %s from %s where %s =%s"
-            data = (select, table, where, value)
         cursor.execute(query, data)
-        if where is None:
+        if data is None:
             return cursor.fetchall()
-        else: return cursor.fetchone()[0]
+        else: 
+            return cursor.fetchone()[0]
     except (Exception, Error) as error:
         print("Error while connecting to PostgreSQL", error)
     finally:
