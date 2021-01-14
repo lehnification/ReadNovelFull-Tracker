@@ -5,7 +5,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job('interval', minutes=15)
+@sched.scheduled_job('interval', minutes=5)
 def timed_job():
     p = subprocess.call([sys.executable, 'checker.py'])
 
@@ -16,5 +16,4 @@ if __name__ == '__main__':
     logging.info('--------------')
     logging.info('Initialise Novels')
     p = subprocess.call([sys.executable, 'checker.py'])
-    logging.info("Switching over to 15 minutes interval check")
     sched.start()
