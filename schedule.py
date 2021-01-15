@@ -2,6 +2,7 @@ import logging
 import subprocess
 import sys
 from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 sched = BlockingScheduler()
 
