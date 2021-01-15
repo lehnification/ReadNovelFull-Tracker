@@ -1,4 +1,4 @@
-import utils.settings as settings
+import settings as settings
 from discord import Webhook, RequestsWebhookAdapter
 
 def initWebhook(id, token):

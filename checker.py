@@ -2,7 +2,7 @@ import logging
 import requests
 import traceback
 import unidecode
-import utils.settings as settings
+import settings
 from bs4 import BeautifulSoup
 from discord import Webhook, RequestsWebhookAdapter
 from utils.db import *

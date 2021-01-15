@@ -1,5 +1,5 @@
 import logging
-import utils.settings as settings
+import settings
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from checker import execute_checks
