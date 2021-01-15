@@ -5,7 +5,6 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 sched = BlockingScheduler()
 
-@sched.scheduled_job(CronTrigger.from_crontab('0 0/5 * ? * * *'))
 def timed_job():
     p = subprocess.call([sys.executable, 'checker.py'])
 
@@ -16,4 +15,5 @@ if __name__ == '__main__':
     logging.info('--------------')
     logging.info('Initialise Novels')
     timed_job()
+    sched.add_job(timed_job(), CronTrigger.from_crontab('0 0/5 * ? * * *'))
     sched.start()
