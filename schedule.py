@@ -16,5 +16,5 @@ if __name__ == '__main__':
     logging.info('--------------')
     logging.info('Initialise Novels')
     timed_job()
-    sched.add_job(timed_job(), CronTrigger.from_crontab('0/5 * * * *'))
+    sched.add_job(timed_job, CronTrigger.from_crontab('0/5 * * * *'))
     sched.start()
