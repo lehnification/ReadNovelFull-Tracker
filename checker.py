@@ -1,10 +1,12 @@
-import requests
 import logging
-import unidecode
+import requests
 import traceback
+import unidecode
+import utils.settings as settings
 from bs4 import BeautifulSoup
 from discord import Webhook, RequestsWebhookAdapter
 from utils.db import *
+from utils.webhook import triggerWebhook
 
 def execute_checks():
     novels = get_novels()
@@ -16,7 +18,7 @@ def execute_checks():
                 compareSaveWithNewPoll(novel[0], novel[1], novel[3], chapters)
         except Exception as e:
             logging.exception('Error while working on ' + novel[0])
-            webhook.send('`%s` threw an error! \n ```python\n%s``` \n %s' % (novel[0], traceback.format_exc(), user))
+            triggerWebhook('`%s` threw an error! \n ```python\n%s```' % (novel[0], traceback.format_exc()))
 
 def check_initialisation(novel):
     if novel[1] is None or novel[2] is None or novel[3] is None:
@@ -25,7 +27,7 @@ def check_initialisation(novel):
 
 
 def initialise_novel(novel):
-    link = get_setting('WEBSITE') + '/' + novel + get_setting('EXTENSION')
+    link = settings.website + '/' + novel + settings.extension
 
     r = requests.get(link)
     r.raise_for_status()
@@ -42,12 +44,11 @@ def initialise_novel(novel):
     chapters = poll_chapters(novel, id)
     last_chapter = chapters[len(chapters)-1]["name"]
     insert_novel_initialisation(novel, name, id, last_chapter)
-    webhook.send('**%s** initialised \n %s \n %s' % (name, link, user))
+    triggerWebhook('**%s** initialised \n %s' % (name, link))
 
 
 def poll_chapters(novel, id):
-    website = get_setting('WEBSITE')
-    link = website + get_setting('CHAPTER_ARCHIVE') + str(id)
+    link = settings.website + settings.chapterArchive + str(id)
 
     r = requests.get(link)
     r.raise_for_status()
@@ -60,7 +61,7 @@ def poll_chapters(novel, id):
     for chapter in chapters_html:
         entry = {}
         entry["name"] = unidecode.unidecode(chapter['title'])
-        entry["link"] = website + chapter['href']
+        entry["link"] = settings.website + chapter['href']
         chapters.append(entry)
     return chapters
 
@@ -70,23 +71,13 @@ def compareSaveWithNewPoll(novel, name, last_chapter, chapters):
     new_latest = chapters[len(chapters)-1]
     if last_index is None:
         update_last_chapter(new_latest["name"], novel)
-        webhook.send('**%s**, last known chapter *%s* not found in chapter list! \nAdding *%s* as last known chapter \n%s \n%s' % (name, last_chapter, new_latest["name"], new_latest["link"], user))
+        triggerWebhook('**%s**, last known chapter *%s* not found in chapter list! \nAdding *%s* as last known chapter \n%s' % (name, last_chapter, new_latest["name"], new_latest["link"]))
     else:
         new_chapters = chapters[last_index+1:]
         if len(new_chapters) != 0:
             update_last_chapter(new_latest["name"], novel)
             if len(new_chapters) > 10:
-                webhook.send('**%s**, *%s* - *%s* \n %s' % (name, new_chapters[0]["name"], new_chapters[len(new_chapters)-1]["name"], user))
+                triggerWebhook('**%s**, *%s* - *%s*' % (name, new_chapters[0]["name"], new_chapters[len(new_chapters)-1]["name"]))
             else:
                 for new_chapter in new_chapters:
-                    webhook.send('**%s**, *%s* \n %s \n %s' % (name, new_chapter["name"], new_chapter["link"], user))
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
-    webhookId = get_setting('WEBHOOK_ID')
-    webhookToken = get_setting('WEBHOOK_TOKEN')
-    webhook = Webhook.partial(webhookId, webhookToken, adapter=RequestsWebhookAdapter())
-    discordUserId = get_setting('DISCORD_USER')
-    user = '<@'+discordUserId+'>'
-    execute_checks()
+                    triggerWebhook('**%s**, *%s* \n %s' % (name, new_chapter["name"], new_chapter["link"]))
