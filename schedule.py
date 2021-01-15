@@ -1,13 +1,12 @@
 import logging
-import subprocess
-import sys
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
+from discord import Webhook, RequestsWebhookAdapter
+from utils.db import *
+from checker import execute_checks
+
 
 sched = BlockingScheduler()
-
-def check_novels():
-    p = subprocess.call([sys.executable, 'checker.py'])
 
 if __name__ == '__main__':
     logging.basicConfig(level = logging.INFO, format='[%(levelname)s] %(message)s')
@@ -15,6 +14,11 @@ if __name__ == '__main__':
     logging.info('ReadNovelFull Tracker')
     logging.info('--------------')
     logging.info('Initialise Novels')
-    check_novels()
-    sched.add_job(check_novels, 'cron', minute='0/5')
+    webhookId = get_setting('WEBHOOK_ID')
+    webhookToken = get_setting('WEBHOOK_TOKEN')
+    webhook = Webhook.partial(webhookId, webhookToken, adapter=RequestsWebhookAdapter())
+    discordUserId = get_setting('DISCORD_USER')
+    user = '<@'+discordUserId+'>'
+    execute_checks()
+    sched.add_job(execute_checks, 'cron', minute='0/5')
     sched.start()
