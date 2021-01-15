@@ -1,7 +1,6 @@
 import requests
 import logging
 import unidecode
-import os
 import traceback
 from bs4 import BeautifulSoup
 from discord import Webhook, RequestsWebhookAdapter
