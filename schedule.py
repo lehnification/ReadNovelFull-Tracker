@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 sched = BlockingScheduler()
 
-def timed_job():
+def check_novels():
     p = subprocess.call([sys.executable, 'checker.py'])
 
 if __name__ == '__main__':
@@ -15,6 +15,6 @@ if __name__ == '__main__':
     logging.info('ReadNovelFull Tracker')
     logging.info('--------------')
     logging.info('Initialise Novels')
-    timed_job()
+    check_novels()
+    sched.add_job(check_novels, 'cron', minute='0/5')
     sched.start()
-    sched.add_job(timed_job, 'cron', minute='0/5')
