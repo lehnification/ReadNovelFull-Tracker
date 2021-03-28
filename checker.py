@@ -18,7 +18,9 @@ def execute_checks():
                 compareSaveWithNewPoll(novel[0], novel[1], novel[3], chapters)
         except Exception as e:
             logging.exception('Error while working on ' + novel[0])
-            triggerWebhook('`%s` threw an error! \n ```python\n%s```' % (novel[0], traceback.format_exc()))
+            if novel[4] == 0:
+                triggerWebhook('`%s` threw an error! \n ```python\n%s```' % (novel[0], traceback.format_exc()))
+                mark_error(novel[0])
 
 def check_initialisation(novel):
     if novel[1] is None or novel[2] is None or novel[3] is None:

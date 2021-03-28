@@ -50,7 +50,22 @@ def update_last_chapter(last_chapter, novel):
         DATABASE_URL = os.environ['DATABASE_URL']
         connection = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = connection.cursor()
-        cursor.execute("UPDATE novels set last_chapter = %s where novel = %s", (last_chapter, novel))
+        cursor.execute("UPDATE novels set last_chapter = %s, error = %s where novel = %s", (last_chapter, 0, novel))
+        connection.commit()
+        return cursor.rowcount == 1
+    except (Exception, Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+    finally:
+        if (connection):
+            cursor.close()
+            connection.close()
+
+def mark_error(novel):
+    try:
+        DATABASE_URL = os.environ['DATABASE_URL']
+        connection = psycopg2.connect(DATABASE_URL, sslmode='require')
+        cursor = connection.cursor()
+        cursor.execute("UPDATE novels set error = %s where novel = %s", (1, novel))
         connection.commit()
         return cursor.rowcount == 1
     except (Exception, Error) as error:

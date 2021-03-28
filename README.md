@@ -16,7 +16,8 @@ create table novels (
 	novel VARCHAR not null,
 	name VARCHAR,
 	id INT,
-	last_chapter VARCHAR);
+	last_chapter VARCHAR,
+	error numeric(1) default 0);
 	
 
 insert into settings
