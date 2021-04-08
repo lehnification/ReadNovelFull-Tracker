@@ -78,7 +78,7 @@ def compareSaveWithNewPoll(novel, name, last_chapter, chapters):
         new_chapters = chapters[last_index+1:]
         if len(new_chapters) != 0:
             update_last_chapter(new_latest["name"], novel)
-            if len(new_chapters) > 10:
+            if len(new_chapters) > 50:
                 triggerWebhook('**%s**, *%s* - *%s*' % (name, new_chapters[0]["name"], new_chapters[len(new_chapters)-1]["name"]))
             else:
                 for new_chapter in new_chapters:
